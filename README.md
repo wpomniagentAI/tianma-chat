@@ -8,6 +8,12 @@
 ![WP](https://img.shields.io/badge/WordPress-6.0%2B-orange)
 ![PHP](https://img.shields.io/badge/PHP-7.4%2B-blueviolet)
 
+## 效果演示
+
+![天马行空 WP 智能体演示](assets/tianma-demo.gif)
+
+> 用自然语言让智能体发布文章、安装插件、优化数据库、创建定时任务……
+
 ## 支持作者
 
 本插件完全免费开源，下方推广链接是作者收入来源，若有需要可点击支持（不影响插件任何功能）：
