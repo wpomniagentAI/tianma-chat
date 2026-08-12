@@ -1,0 +1,1206 @@
+/* 天马行空 WP 智能体 - 对话界面 */
+
+.tianma-wrap .tianma-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 20px;
+	font-weight: 500;
+}
+
+.tianma-chat-layout {
+	display: flex;
+	gap: 16px;
+	margin-top: 12px;
+	align-items: stretch;
+}
+
+/* ---------- 侧栏 ---------- */
+
+.tianma-sidebar {
+	width: 240px;
+	flex: 0 0 240px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	padding: 14px;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	align-self: flex-start;
+	position: sticky;
+	top: 50px;
+}
+
+.tianma-side-block h3 {
+	margin: 0 0 4px;
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.tianma-side-desc {
+	margin: 0 0 8px;
+	color: #646970;
+	font-size: 12px;
+}
+
+.tianma-task-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	max-height: 260px;
+	overflow-y: auto;
+}
+
+.tianma-task-list li {
+	padding: 6px 0;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.tianma-task-list .tianma-task-summary {
+	display: block;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.tianma-task-list .tianma-task-meta {
+	display: block;
+	color: #8c8f94;
+	font-size: 11px;
+	margin-top: 2px;
+}
+
+.tianma-task-list .empty {
+	color: #8c8f94;
+}
+
+.tianma-side-foot {
+	margin-top: auto;
+}
+
+/* ---------- 对话区 ---------- */
+
+.tianma-chat-main {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	height: calc(100vh - 180px);
+	min-height: 480px;
+}
+
+.tianma-messages {
+	flex: 1;
+	overflow-y: auto;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.tianma-msg.user {
+	align-self: flex-end;
+	max-width: 78%;
+}
+
+.tianma-msg.assistant {
+	align-self: flex-start;
+	max-width: 100%;
+}
+
+.tianma-msg .bubble {
+	background: #f6f7f7;
+	border: 1px solid #e2e4e7;
+	border-radius: 12px;
+	padding: 10px 14px;
+	line-height: 1.65;
+	font-size: 13px;
+	word-break: break-word;
+}
+
+.tianma-msg.user .bubble {
+	background: #eef3fd;
+	border-color: #d0d9ea;
+}
+
+.tianma-msg.thinking .bubble {
+	color: #8c8f94;
+	font-style: italic;
+}
+
+.tianma-msg.error .bubble {
+	background: #fbeaea;
+	border-color: #f0c1c1;
+	color: #791f1f;
+}
+
+/* ---------- 步骤列表 ---------- */
+
+.tianma-steps {
+	border: 1px solid #e2e4e7;
+	border-radius: 12px;
+	margin-bottom: 10px;
+	background: #fbfbfc;
+}
+
+.tianma-steps-head {
+	padding: 8px 14px;
+	font-size: 12px;
+	font-weight: 500;
+	color: #646970;
+	border-bottom: 1px solid #eee;
+}
+
+.tianma-steps ol {
+	margin: 0;
+	padding: 8px 14px 8px 34px;
+	font-size: 12px;
+}
+
+.tianma-steps li {
+	margin: 4px 0;
+	line-height: 1.5;
+}
+
+.tianma-steps .step-icon {
+	margin-right: 6px;
+	font-weight: 500;
+}
+
+.tianma-steps li.ok .step-icon { color: #0f6e56; }
+.tianma-steps li.fail .step-icon { color: #a32d2d; }
+.tianma-steps .step-name {
+	font-weight: 500;
+	margin-right: 8px;
+}
+.tianma-steps .step-msg { color: #646970; }
+
+/* ---------- 确认卡片 ---------- */
+
+.tianma-confirm {
+	border: 1px solid #f0c1c1;
+	border-radius: 12px;
+	background: #fff8f8;
+	padding: 14px;
+	margin-bottom: 10px;
+}
+
+.tianma-confirm-title {
+	font-weight: 500;
+	color: #a32d2d;
+	margin-bottom: 8px;
+}
+
+.tianma-confirm-tool { font-size: 13px; margin-bottom: 6px; }
+.tianma-confirm-desc { color: #646970; font-size: 13px; margin-bottom: 8px; }
+
+.tianma-confirm-args {
+	background: #f6f7f7;
+	border: 1px solid #e2e4e7;
+	border-radius: 8px;
+	padding: 10px;
+	font-size: 12px;
+	overflow-x: auto;
+	max-height: 160px;
+}
+
+.tianma-confirm-btns { margin-top: 10px; }
+
+/* ---------- 反馈 ---------- */
+
+.tianma-feedback {
+	font-size: 12px;
+	color: #8c8f94;
+	margin-top: 8px;
+}
+
+.tianma-feedback .btn-fb {
+	background: none;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 2px 8px;
+	margin-left: 6px;
+	cursor: pointer;
+	font-size: 13px;
+}
+
+.tianma-feedback .btn-fb:hover { background: #f0f0f1; }
+
+/* ---------- 输入区 ---------- */
+
+.tianma-composer {
+	display: flex;
+	gap: 10px;
+	padding: 14px;
+	border-top: 1px solid #e2e4e7;
+	align-items: flex-end;
+}
+
+.tianma-composer textarea {
+	flex: 1;
+	min-height: 42px;
+	max-height: 160px;
+	resize: none;
+	border-radius: 8px;
+	padding: 10px 12px;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.tianma-composer .button {
+	height: 42px;
+	padding: 0 20px;
+	font-size: 13px;
+}
+
+/* ---------- 记忆弹窗 ---------- */
+
+.tianma-memories-modal {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.tianma-memories-modal .modal-inner {
+	background: #fff;
+	border-radius: 12px;
+	padding: 20px 24px;
+	width: 640px;
+	max-width: 92vw;
+	max-height: 80vh;
+	overflow-y: auto;
+	position: relative;
+}
+
+.tianma-memories-modal h2 {
+	margin: 0 0 12px;
+	font-size: 16px;
+	font-weight: 500;
+}
+
+.tianma-memories-modal .modal-close {
+	position: absolute;
+	top: 16px;
+	right: 16px;
+}
+
+.tianma-memories-modal .mem-list {
+	list-style: none;
+	margin: 12px 0 0;
+	padding: 0;
+}
+
+.tianma-memories-modal .mem-list li {
+	border: 1px solid #eee;
+	border-radius: 8px;
+	padding: 10px 12px;
+	margin-bottom: 8px;
+}
+
+.tianma-memories-modal .mem-list .tag {
+	display: inline-block;
+	background: #eef3fd;
+	color: #185fa5;
+	border-radius: 4px;
+	font-size: 11px;
+	padding: 1px 6px;
+	margin-right: 8px;
+}
+
+.tianma-memories-modal .mem-list .meta {
+	font-size: 11px;
+	color: #8c8f94;
+	margin-top: 4px;
+}
+
+.tianma-memories-modal .mem-list .preview {
+	font-size: 12px;
+	color: #646970;
+	margin-top: 4px;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+/* 窄屏适配 */
+@media (max-width: 960px) {
+	.tianma-chat-layout { flex-direction: column; }
+	.tianma-sidebar { width: 100%; flex-basis: auto; position: static; }
+	.tianma-chat-main { height: 560px; }
+}
+
+/* ---------- 模型切换条 ---------- */
+
+.tianma-model-bar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 14px;
+	border-bottom: 1px solid #e2e4e7;
+	background: #fafafa;
+	flex-wrap: wrap;
+}
+
+.tianma-model-bar .model-bar-label {
+	font-size: 12px;
+	color: #646970;
+	font-weight: 500;
+}
+
+.tianma-model-bar select {
+	max-width: 220px;
+	font-size: 12px;
+	height: 28px;
+	border-radius: 6px;
+}
+
+.tianma-model-bar .model-bar-current {
+	font-size: 12px;
+	color: #0f6e56;
+	margin-left: auto;
+	white-space: nowrap;
+}
+
+/* ---------- 免授权执行开关 ---------- */
+
+.tianma-auto-confirm {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin-left: auto;
+	font-size: 12px;
+	color: #666;
+	cursor: pointer;
+	user-select: none;
+	white-space: nowrap;
+}
+
+.tianma-auto-confirm input {
+	display: none;
+}
+
+.tianma-auto-confirm .auto-confirm-switch {
+	width: 32px;
+	height: 18px;
+	border-radius: 10px;
+	background: #ccc;
+	position: relative;
+	transition: background .2s;
+	flex-shrink: 0;
+}
+
+.tianma-auto-confirm .auto-confirm-switch::after {
+	content: '';
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: #fff;
+	transition: left .2s;
+}
+
+.tianma-auto-confirm.on {
+	color: #b32d2e;
+	font-weight: 600;
+}
+
+.tianma-auto-confirm.on .auto-confirm-switch {
+	background: #d63638;
+}
+
+.tianma-auto-confirm.on .auto-confirm-switch::after {
+	left: 16px;
+}
+
+.auto-confirm-tip {
+	margin-left: 6px;
+	font-size: 11px;
+	color: #d63638;
+	font-weight: 400;
+}
+
+/* ---------- 流式思考动画 ---------- */
+
+.tianma-stream .tianma-think {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 2px;
+	color: #8c8f94;
+	font-size: 13px;
+}
+
+.tianma-think .dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: #7f77dd;
+	animation: tianma-bounce 1.2s infinite ease-in-out;
+}
+
+.tianma-think .dot:nth-child(2) { animation-delay: 0.15s; background: #1d9e75; }
+.tianma-think .dot:nth-child(3) { animation-delay: 0.3s; background: #d85a30; }
+
+@keyframes tianma-bounce {
+	0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+	30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ---------- 深度思考过程 ---------- */
+
+.tianma-reasoning {
+	background: #fbfbfc;
+	border-left: 3px solid #c8c4ea;
+	border-radius: 0 8px 8px 0;
+	padding: 8px 12px;
+	margin-bottom: 8px;
+}
+
+.tianma-reasoning .reasoning-head {
+	font-size: 11px;
+	color: #8c8f94;
+	margin-bottom: 4px;
+	display: block;
+}
+
+.tianma-reasoning .reasoning-body {
+	font-size: 12px;
+	color: #a0a0a0;
+	font-style: italic;
+	line-height: 1.6;
+	max-height: 160px;
+	overflow-y: auto;
+	word-break: break-word;
+}
+
+/* ---------- 工具实时卡片 ---------- */
+
+.tianma-tools {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+
+.tianma-tool-card {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+	background: #fbfbfc;
+	border: 1px solid #e2e4e7;
+	border-radius: 8px;
+	padding: 6px 10px;
+}
+
+.tianma-tool-card .tc-name { font-weight: 500; }
+.tianma-tool-card .tc-args { color: #8c8f94; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%; }
+.tianma-tool-card .tc-msg { color: #646970; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; display: block; flex-basis: 100%; }
+
+.tianma-tool-card .tc-spin {
+	width: 12px;
+	height: 12px;
+	border: 2px solid #e2e4e7;
+	border-top-color: #7f77dd;
+	border-radius: 50%;
+	animation: tianma-spin 0.8s linear infinite;
+	flex: 0 0 12px;
+}
+
+@keyframes tianma-spin {
+	to { transform: rotate(360deg); }
+}
+
+.tianma-tool-card.ok { border-color: #b8dcc9; background: #f2faf6; }
+.tianma-tool-card.ok .tc-name { color: #0f6e56; }
+.tianma-tool-card.fail { border-color: #f0c1c1; background: #fdf6f6; }
+.tianma-tool-card.fail .tc-name { color: #a32d2d; }
+
+.tianma-tool-card.running { border-color: #d5d0f2; background: #f7f6fd; }
+
+/* ---------- 流式输出区 ---------- */
+
+.tianma-stream .tianma-out {
+	display: none;
+	background: #f6f7f7;
+	border: 1px solid #e2e4e7;
+	border-radius: 12px;
+	padding: 10px 14px;
+	line-height: 1.65;
+	font-size: 13px;
+	word-break: break-word;
+	margin-bottom: 8px;
+}
+
+.tianma-stream .tianma-err {
+	display: inline-block;
+	background: #fbeaea;
+	border: 1px solid #f0c1c1;
+	color: #791f1f;
+	border-radius: 12px;
+	padding: 10px 14px;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+/* ---------- 会话列表（微信式） ---------- */
+
+.tianma-conv-block {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	flex: 1;
+	position: relative;
+}
+
+.tianma-conv-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 6px;
+}
+
+.tianma-conv-head h3 {
+	margin: 0;
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.tianma-btn-clear {
+	background: none;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	font-size: 11px;
+	color: #8c8f94;
+	padding: 2px 8px;
+	cursor: pointer;
+}
+
+.tianma-btn-clear:hover {
+	color: #a32d2d;
+	border-color: #f0c1c1;
+	background: #fdf6f6;
+}
+
+.tianma-clear-menu {
+	position: absolute;
+	top: 26px;
+	right: 0;
+	z-index: 50;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+	padding: 4px;
+	min-width: 130px;
+}
+
+.tianma-clear-menu button {
+	display: block;
+	width: 100%;
+	background: none;
+	border: none;
+	text-align: left;
+	padding: 7px 10px;
+	font-size: 12px;
+	cursor: pointer;
+	border-radius: 5px;
+}
+
+.tianma-clear-menu button:hover { background: #f0f0f1; }
+.tianma-clear-menu button:last-child { color: #a32d2d; }
+
+.tianma-conv-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	overflow-y: auto;
+	flex: 1;
+	max-height: 46vh;
+}
+
+.tianma-conv-list li {
+	position: relative;
+	padding: 9px 10px;
+	border-radius: 8px;
+	cursor: pointer;
+	border: 1px solid transparent;
+	margin-bottom: 4px;
+	transition: background 0.15s;
+}
+
+.tianma-conv-list li:hover { background: #f0f0f1; }
+.tianma-conv-list li.active { background: #eef3fd; border-color: #d0d9ea; }
+
+.tianma-conv-list .conv-title {
+	font-size: 13px;
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding-right: 18px;
+}
+
+.tianma-conv-list .conv-preview {
+	font-size: 11px;
+	color: #8c8f94;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	margin-top: 2px;
+}
+
+.tianma-conv-list .conv-del {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	width: 16px;
+	height: 16px;
+	line-height: 14px;
+	text-align: center;
+	border-radius: 50%;
+	color: #8c8f94;
+	font-size: 13px;
+	display: none;
+}
+
+.tianma-conv-list li:hover .conv-del { display: block; }
+.tianma-conv-list .conv-del:hover { background: #e2e4e7; color: #a32d2d; }
+
+.tianma-conv-list .empty { color: #8c8f94; font-size: 12px; cursor: default; }
+.tianma-conv-list .empty:hover { background: transparent; }
+
+/* ---------- Token 用量 ---------- */
+
+.tianma-usage {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: 12px;
+	line-height: 1.8;
+	color: #646970;
+}
+
+.tianma-usage strong { color: #2c2c2a; font-weight: 500; }
+.tianma-usage .desc { color: #8c8f94; font-size: 11px; }
+
+/* ---------- 角色/技能管理弹窗 ---------- */
+
+.tianma-modal {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	z-index: 100001;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.tianma-modal-inner {
+	background: #fff;
+	border-radius: 12px;
+	padding: 20px 24px;
+	width: 560px;
+	max-width: 94vw;
+	max-height: 86vh;
+	overflow-y: auto;
+}
+
+.tianma-modal-inner h3 {
+	margin: 0 0 14px;
+	font-size: 15px;
+	font-weight: 500;
+}
+
+.tianma-modal-inner textarea,
+.tianma-modal-inner select {
+	width: 100%;
+	margin-top: 4px;
+}
+
+.tianma-roles-table code {
+	font-size: 11px;
+}
+
+/* ---------- 可视化文件卡片与编辑器 ---------- */
+
+.tianma-file-card {
+	margin: 8px 0;
+	border: 1px solid #e2e4e7;
+	border-radius: 8px;
+	background: #f6f7f7;
+	overflow: hidden;
+	max-width: 720px;
+}
+
+.tianma-file-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	background: #fff;
+	border-bottom: 1px solid #e2e4e7;
+}
+
+.tianma-file-icon { font-size: 15px; }
+
+.tianma-file-path {
+	flex: 1;
+	font-size: 12px;
+	word-break: break-all;
+	color: #2271b1;
+}
+
+.tianma-file-preview {
+	margin: 0;
+	padding: 10px 12px;
+	font-size: 11px;
+	line-height: 1.5;
+	color: #50575e;
+	max-height: 120px;
+	overflow: auto;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.tianma-editor-inner { width: 780px; }
+
+.tianma-editor-path {
+	background: #f0f0f1;
+	padding: 2px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	word-break: break-all;
+}
+
+.tianma-editor-ta {
+	width: 100%;
+	height: 46vh;
+	font-family: Consolas, Monaco, "Courier New", monospace;
+	font-size: 12px;
+	line-height: 1.55;
+	padding: 10px 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+	color: #1d2327;
+	resize: vertical;
+	tab-size: 4;
+}
+
+.tianma-editor-ta:focus {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	outline: none;
+}
+
+.tianma-editor-msg {
+	min-height: 18px;
+	font-size: 12px;
+	margin: 6px 0 0;
+}
+
+/* ---------- 目录卡片 / 结果卡片 / 文件标签 ---------- */
+
+.tianma-file-label {
+	padding: 4px 12px 0;
+	font-size: 11px;
+	color: #8c8f94;
+}
+
+.tianma-dir-card {
+	margin: 8px 0;
+	border: 1px solid #e2e4e7;
+	border-radius: 8px;
+	background: #fff;
+	overflow: hidden;
+	max-width: 720px;
+}
+
+.tianma-dir-count {
+	font-size: 11px;
+	color: #8c8f94;
+	white-space: nowrap;
+}
+
+.tianma-dir-list {
+	max-height: 240px;
+	overflow: auto;
+	padding: 4px 0;
+}
+
+.tianma-dir-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 12px;
+	font-size: 12px;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.tianma-dir-row:last-child { border-bottom: none; }
+
+.tianma-dir-icon { font-size: 13px; }
+
+.tianma-dir-name {
+	flex: 1;
+	font-family: Consolas, Monaco, monospace;
+	color: #1d2327;
+	word-break: break-all;
+}
+
+.tianma-dir-meta {
+	font-size: 11px;
+	color: #8c8f94;
+	white-space: nowrap;
+}
+
+.tianma-visual-result {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 8px 0;
+	padding: 8px 12px;
+	background: #f6f7f7;
+	border: 1px solid #e2e4e7;
+	border-radius: 8px;
+	max-width: 720px;
+	font-size: 12px;
+	color: #1d2327;
+}
+
+.tianma-visual-icon { font-size: 14px; }
+
+.tianma-visual-title { word-break: break-all; }
+
+/* ---------- AI 生成图片卡片 ---------- */
+
+.tianma-image-card {
+	margin: 8px 0;
+	border: 1px solid #e2e4e7;
+	border-radius: 8px;
+	background: #fff;
+	overflow: hidden;
+	max-width: 720px;
+}
+
+.tianma-image-prompt {
+	flex: 1;
+	font-size: 12px;
+	color: #1d2327;
+	word-break: break-all;
+}
+
+.tianma-image-preview {
+	display: block;
+	width: 100%;
+	max-height: 340px;
+	object-fit: contain;
+	background: #f6f7f7;
+}
+
+/* ---------- 侧栏广告卡片（腾讯云促销，开源插件盈利位） ---------- */
+
+.tianma-ad {
+	background: linear-gradient(160deg, #f0f7ff 0%, #eef4ff 55%, #f7f4ff 100%);
+	border: 1px solid #cfe0ff;
+	border-radius: 10px;
+	padding: 12px 12px 10px;
+	box-shadow: 0 1px 3px rgba(30, 64, 175, 0.08);
+}
+
+.tianma-ad-head { position: relative; padding-right: 66px; }
+
+.tianma-ad-badge {
+	position: absolute;
+	top: -2px;
+	right: 0;
+	background: #ff4d4f;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1;
+	padding: 4px 7px;
+	border-radius: 10px;
+	white-space: nowrap;
+}
+
+.tianma-ad-head h3 {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 700;
+	color: #1d3a8f;
+}
+
+.tianma-ad-sub {
+	margin: 3px 0 0;
+	font-size: 11px;
+	color: #d4380d;
+	font-weight: 600;
+}
+
+.tianma-ad-plans {
+	margin: 8px 0 10px;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.tianma-ad-plans li {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	background: rgba(255, 255, 255, 0.75);
+	border: 1px solid #e3ecff;
+	border-radius: 6px;
+	padding: 4px 8px;
+	font-size: 11px;
+}
+
+.tianma-ad-p-name { font-weight: 600; color: #1d2327; white-space: nowrap; }
+
+.tianma-ad-p-tag {
+	color: #2271b1;
+	font-size: 10px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 1;
+}
+
+.tianma-ad-p-price { margin-left: auto; white-space: nowrap; display: flex; align-items: baseline; gap: 5px; }
+
+.tianma-ad-p-price del { color: #8c8f94; font-size: 10px; }
+
+.tianma-ad-p-price b { color: #e63946; font-size: 12px; font-weight: 700; }
+
+.tianma-ad-cta {
+	display: block;
+	text-align: center;
+	background: linear-gradient(90deg, #1e63f0 0%, #3b82f6 55%, #10b8ff 100%);
+	color: #fff;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1;
+	padding: 9px 10px;
+	border-radius: 7px;
+	text-decoration: none;
+	box-shadow: 0 2px 6px rgba(30, 99, 240, 0.35);
+	transition: opacity 0.15s;
+}
+
+.tianma-ad-cta:hover { color: #fff; opacity: 0.9; }
+
+/* ---------- 广告卡片 · 长期特惠区块（3年/5年机） ---------- */
+
+.tianma-ad-long {
+	margin-top: 9px;
+	padding-top: 9px;
+	border-top: 1px dashed #b9cdf5;
+}
+
+.tianma-ad-long .tianma-ad-head { padding-right: 60px; }
+
+.tianma-ad-badge-long { background: #7b2cbf; }
+
+.tianma-ad-p-disc {
+	background: #ff4d4f;
+	color: #fff;
+	font-size: 10px;
+	font-weight: 700;
+	line-height: 1;
+	padding: 3px 5px;
+	border-radius: 4px;
+	white-space: nowrap;
+}
+
+/* ---------- 聊天窗口顶部轮播广告条 ---------- */
+
+.tianma-ad-banner,
+.tianma-ad-banner * { box-sizing: border-box; }
+
+.tianma-ad-banner {
+	position: relative;
+	height: 62px;
+	border-radius: 10px;
+	overflow: hidden;
+	margin: 0 0 10px;
+	box-shadow: 0 2px 8px rgba(30, 64, 175, 0.12);
+}
+
+.tianma-ad-banner-track {
+	display: flex;
+	height: 100%;
+	width: 100%;
+	transition: transform 0.5s ease;
+}
+
+.tianma-ad-banner-item {
+	flex: 0 0 100%;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0 12px;
+	text-decoration: none;
+	background: linear-gradient(120deg, #1e63f0 0%, #3b82f6 60%, #10b8ff 100%);
+	color: #fff;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.tianma-ad-banner-item:hover { color: #fff; text-decoration: none; }
+
+.tianma-ad-banner-tag {
+	background: rgba(255, 255, 255, 0.22);
+	border: 1px solid rgba(255, 255, 255, 0.45);
+	color: #fff;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1;
+	padding: 4px 7px;
+	border-radius: 12px;
+	flex-shrink: 0;
+	max-width: 34%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.tianma-ad-banner-title {
+	font-size: 14px;
+	font-weight: 700;
+	flex: 0 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.tianma-ad-banner-sub {
+	font-size: 12px;
+	opacity: 0.92;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 1 1 auto;
+	min-width: 30px;
+}
+
+.tianma-ad-banner-go {
+	flex-shrink: 0;
+	font-size: 11px;
+	font-weight: 600;
+	background: rgba(255, 255, 255, 0.25);
+	border: 1px solid rgba(255, 255, 255, 0.6);
+	padding: 5px 8px;
+	border-radius: 14px;
+}
+
+/* 特别突出项（Hy Token Plan · 混元 API）：深色高亮 + 更大标题 */
+.tianma-ad-banner-item.hot {
+	background: linear-gradient(120deg, #111c4e 0%, #2b1a6b 45%, #6b21a8 100%);
+	box-shadow: inset 0 0 0 2px rgba(255, 200, 60, 0.55);
+}
+
+.tianma-ad-banner-item.hot .tianma-ad-banner-tag {
+	background: linear-gradient(90deg, #ffd24d, #ff9f1c);
+	color: #3a2400;
+	border: none;
+	font-weight: 800;
+}
+
+.tianma-ad-banner-item.hot .tianma-ad-banner-title {
+	font-size: 16px;
+	color: #ffe08a;
+}
+
+.tianma-ad-banner-item.hot .tianma-ad-banner-go {
+	background: linear-gradient(90deg, #ffd24d, #ff9f1c);
+	color: #3a2400;
+	border: none;
+	font-weight: 800;
+}
+
+.tianma-ad-banner-dots {
+	position: absolute;
+	right: 10px;
+	bottom: 6px;
+	display: flex;
+	gap: 5px;
+	z-index: 2;
+}
+
+.tianma-ad-banner-dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.45);
+	cursor: pointer;
+	transition: background 0.2s, transform 0.2s;
+}
+
+.tianma-ad-banner-dot.on { background: #fff; transform: scale(1.25); }
+
+@media (max-width: 960px) {
+	.tianma-ad-banner { height: 52px; }
+	.tianma-ad-banner-sub { display: none; }
+	.tianma-ad-banner-item.hot .tianma-ad-banner-title { font-size: 14px; }
+}
+
+/* ---------- 侧栏广告整卡可点击（a 包裹） ---------- */
+
+.tianma-ad {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+	cursor: pointer;
+	transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.tianma-ad:hover {
+	box-shadow: 0 3px 10px rgba(30, 64, 175, 0.22);
+	transform: translateY(-1px);
+}
+
+.tianma-ad h3, .tianma-ad p, .tianma-ad ul, .tianma-ad li { color: inherit; }
+
+.tianma-ad-plans b { color: #e63946; }
+
+/* ---------- 聊天页标题下的描述与关于信息 ---------- */
+
+.tianma-sub { margin: 2px 0 12px; }
+
+.tianma-desc { margin: 0 0 4px; color: #50575e; font-size: 12px; }
+
+.tianma-about-line { margin: 0; color: #646970; font-size: 11px; line-height: 1.7; }
+
+.tianma-about-line a { color: #2271b1; text-decoration: none; }
+
+.tianma-about-line a:hover { text-decoration: underline; }
+
+/* ---------- 标题版本徽章与开源说明 ---------- */
+
+.tianma-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.tianma-ver {
+	display: inline-block;
+	background: #e8f0fe;
+	color: #1e63f0;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1;
+	padding: 5px 9px;
+	border-radius: 12px;
+	vertical-align: middle;
+}
+
+.tianma-open-note { margin: 0 0 4px; color: #50575e; font-size: 12px; line-height: 1.7; }
