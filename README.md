@@ -3,10 +3,18 @@
 > 让 WordPress **自己干活** —— 内置在 WordPress 里的 AI 智能体（AI Agent）插件。
 > 用中文聊天的方式，完成全站管理、内容创作、代码开发与系统维护。
 
-![Version](https://img.shields.io/badge/version-1.5.8-blue)
+![Version](https://img.shields.io/badge/version-1.6.0-blue)
 ![License](https://img.shields.io/badge/license-GPL--2.0-green)
 ![WP](https://img.shields.io/badge/WordPress-6.0%2B-orange)
 ![PHP](https://img.shields.io/badge/PHP-7.4%2B-blueviolet)
+
+## 支持作者
+
+本插件完全免费开源，下方推广链接是作者收入来源，若有需要可点击支持（不影响插件任何功能）：
+
+- [腾讯云服务器 · 买1年送3个月 / 3年5年机特惠低至2折（轻量低至 99 元/年）](https://curl.qcloud.com/89geAkEc)
+- [腾讯云智能体开发平台 ADP · 新客首月最高直降 880 元](https://curl.qcloud.com/C5WxwAdZ)
+- [Hy Token Plan · 腾讯混元 API 订阅 · 低至 28 元/月](https://curl.qcloud.com/TwgyEsgI)
 
 为什么叫「天马行空」？因为它的能力不设上限，取决于你的想象力。它不是固定功能的工具箱，而是一个能听懂人话、会自己想办法干活的 AI——你想到什么，它就能帮你做什么，而且越用越聪明。
 它不是模板，而是引擎。各行各业的站长，都能玩出花来：
