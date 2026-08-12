@@ -13,7 +13,7 @@ License: GPLv2 or later
 
 「天马行空 WP 智能体」（简称天马）是一个真正意义上的 AI Agent 插件，而非简单的聊天机器人：
 
-* 官网及更新地址：https://github.com/wpomniagentAI/tianma-chat ｜ QQ：3908349048（欢迎加我一起讨论拓展）
+* 官网及更新：https://github.com/wpomniagentAI/tianma-chat ｜ 国内镜像（Gitee）：https://gitee.com/xxx5545/tianma-chat ｜ QQ：3908349048（欢迎加我一起讨论拓展）
 * 本插件免费开源使用，任何利用插件收费的都是骗子；插件内置广告位是作者加的，有需要请支持下作者
 
 = 核心能力 =

@@ -76,7 +76,8 @@
 
 ## 联系作者
 
-- 官网及更新：[https://github.com/wpomniagentAI/tianma-chat](https://github.com/wpomniagentAI/tianma-chat)（欢迎 star / 提交 issue 反馈）
+- 官网及更新：[GitHub](https://github.com/wpomniagentAI/tianma-chat)（欢迎 star / 提交 issue 反馈）
+- 国内镜像：[Gitee](https://gitee.com/xxx5545/tianma-chat)（国内用户下载更快）
 - QQ：3908349048（欢迎加我一起讨论拓展该插件）
 - 期待与你共同探讨、拓展 WP 智能体能力，让它更好用、适配更多用户需求场景
 

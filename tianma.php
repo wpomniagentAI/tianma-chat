@@ -3,7 +3,7 @@
  * Plugin Name: 天马行空 WP 智能体
  * Plugin URI:  https://github.com/wpomniagentAI/tianma-chat
  * Description: 内置 AI 智能体助手：连接外部大模型 API 与内置向量记忆库，用自然语言完成 WordPress 全站管理、开发与维护任务。自学习，越用越聪明。
- * Version:     1.5.9
+ * Version:     1.6.0
  * Author:      天马（GitHub wpomniagentAI/tianma-chat · QQ 3908349048）
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'TIANMA_VERSION', '1.5.9' );
+define( 'TIANMA_VERSION', '1.6.0' );
 define( 'TIANMA_PATH', plugin_dir_path( __FILE__ ) );
 define( 'TIANMA_URL', plugin_dir_url( __FILE__ ) );
 define( 'TIANMA_DB_VERSION', '1.5.1' );

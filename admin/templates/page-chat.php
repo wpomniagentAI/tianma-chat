@@ -12,7 +12,8 @@
 			期待与你共同探讨、拓展 WP 智能体能力，让它更好用、适配更多用户需求场景。
 		</p>
 		<p class="tianma-about-line">
-			🌐 官网及更新：<a href="https://github.com/wpomniagentAI/tianma-chat" target="_blank" rel="noopener nofollow">github.com/wpomniagentAI/tianma-chat</a> ·
+			🌐 GitHub：<a href="https://github.com/wpomniagentAI/tianma-chat" target="_blank" rel="noopener nofollow">github.com/wpomniagentAI/tianma-chat</a> ·
+			📦 国内镜像（Gitee）：<a href="https://gitee.com/xxx5545/tianma-chat" target="_blank" rel="noopener nofollow">gitee.com/xxx5545/tianma-chat</a> ·
 			💬 QQ：<a href="https://wpa.qq.com/msgrd?v=3&amp;uin=3908349048&amp;site=qq&amp;menu=yes" target="_blank" rel="noopener nofollow">3908349048</a>（欢迎加我一起讨论拓展该插件）·
 			⚠️ 任何利用插件收费的都是骗子 ·
 			📢 内置广告位是作者加的，有需要支持下作者

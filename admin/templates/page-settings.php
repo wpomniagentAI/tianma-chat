@@ -176,7 +176,8 @@
 
 	<h2>关于天马行空 WP 智能体</h2>
 	<div class="tianma-about">
-		<p>🌐 官网及更新：<a href="https://github.com/wpomniagentAI/tianma-chat" target="_blank" rel="noopener nofollow">github.com/wpomniagentAI/tianma-chat</a></p>
+		<p>🌐 GitHub：<a href="https://github.com/wpomniagentAI/tianma-chat" target="_blank" rel="noopener nofollow">github.com/wpomniagentAI/tianma-chat</a>（欢迎 star / issue）</p>
+		<p>📦 国内镜像（Gitee）：<a href="https://gitee.com/xxx5545/tianma-chat" target="_blank" rel="noopener nofollow">gitee.com/xxx5545/tianma-chat</a>（国内下载更快）</p>
 		<p>💬 QQ：<a href="https://wpa.qq.com/msgrd?v=3&amp;uin=3908349048&amp;site=qq&amp;menu=yes" target="_blank" rel="noopener nofollow">3908349048</a>（欢迎加我一起讨论拓展该插件）</p>
 		<p>🆓 本插件<b>免费开源</b>使用，任何利用插件收费的都是骗子。</p>
 		<p>📢 插件内置广告位是作者加的，希望大家有需要的支持下作者，感谢 🙏</p>
