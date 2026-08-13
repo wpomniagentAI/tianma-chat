@@ -474,6 +474,12 @@ class Tianma_Core {
 			'permission_callback' => array( $this, 'check_permission' ),
 		) );
 
+		register_rest_route( 'tianma/v1', '/task-stream', array(
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'api_task_stream' ),
+			'permission_callback' => array( $this, 'check_permission' ),
+		) );
+
 		register_rest_route( 'tianma/v1', '/history', array(
 			'methods'             => 'GET',
 			'callback'            => array( $this, 'api_history' ),
@@ -641,9 +647,17 @@ class Tianma_Core {
 
 		$auto_confirm = $this->parse_auto_confirm( $request );
 		$role_id      = (int) $request->get_param( 'role_id' );
+		$php_timeout  = $request->get_param( 'php_timeout' );
+		$max_steps    = $request->get_param( 'max_steps' );
 
 		if ( (bool) $request->get_param( 'stream' ) ) {
-			$this->stream_chat( $message, $history, $user_id, $conv, $auto_confirm, $role_id );
+			// 优先走后台异步：Web 请求瞬时返回 task_id，智能体在独立进程执行，
+			// 前端轮询拉取——彻底避免"AI 回复期间整站卡顿"。拉起失败则降级为同步流式。
+			$run = $this->start_async_run( $message, $history, $user_id, $conv, $auto_confirm, $role_id, $php_timeout, $max_steps );
+			if ( $run ) {
+				return rest_ensure_response( array( 'task_id' => $run['id'], 'async' => true ) );
+			}
+			$this->stream_chat( $message, $history, $user_id, $conv, $auto_confirm, $role_id, $php_timeout, $max_steps );
 			return null; // 流式输出后已终止
 		}
 
@@ -693,8 +707,148 @@ class Tianma_Core {
 		return $clean;
 	}
 
-	/** SSE 流式对话输出（输出后直接终止） */
-	private function stream_chat( $message, $history, $user_id, $conv, $auto_confirm = null, $role_id = 0 ) {
+	/* -------------------------------------------------------------------
+	 * 后台异步执行：把智能体主循环挪到独立进程，Web 请求瞬时返回，
+	 * 前端轮询 /task-stream 拉取增量事件。拉起失败时由调用方降级为同步流式。
+	 * ------------------------------------------------------------------- */
+
+	/** 探测可用于后台执行的 CLI php 路径 */
+	private function find_php_cli() {
+		// 当前进程本身就是 CLI / 内置服务器 → 直接用
+		$sapi = PHP_SAPI;
+		if ( 'cli' === $sapi || 'cli-server' === $sapi ) {
+			return PHP_BINARY;
+		}
+		$is_win = 'WIN' === strtoupper( substr( PHP_OS, 0, 3 ) );
+		// FPM / CGI 等 Web 环境：Linux 用 command -v，Windows 用 where（cmd 无 command -v）
+		$test      = $is_win ? 'where' : 'command -v';
+		$candidates = $is_win
+			? array( 'php.exe', 'php', 'C:/php/php.exe', 'C:/Windows/php.exe' )
+			: array( 'php', '/usr/bin/php', '/usr/local/bin/php' );
+		foreach ( $candidates as $c ) {
+			$out = @shell_exec( $test . ' ' . escapeshellarg( $c ) . ' 2>/dev/null' );
+			if ( $out && trim( $out ) ) {
+				$line = strtok( trim( $out ), "\n" ); // Windows where 可能多行，取首行
+				return $line ? $line : trim( $out );
+			}
+		}
+		// shell_exec 被禁时的绝对路径兜底
+		$abs = $is_win
+			? array( 'C:/php/php.exe', 'C:/Windows/php.exe' )
+			: array( '/usr/bin/php', '/usr/local/bin/php' );
+		foreach ( $abs as $p ) {
+			if ( @is_executable( $p ) ) {
+				return $p;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * 创建一次异步运行：写 meta + 空 stream 文件，拉起后台进程，返回 run id。
+	 * 失败（目录不可写 / 找不到 php）返回 false，由调用方降级。
+	 */
+	private function start_async_run( $message, $history, $user_id, $conv, $auto_confirm, $role_id, $php_timeout = 0, $max_steps = null ) {
+		$upload = wp_upload_dir();
+		$dir    = $upload['basedir'] . '/tianma-stream';
+		if ( ! wp_mkdir_p( $dir ) ) {
+			return false;
+		}
+		// 清理 1 小时前的旧 run 文件，避免无限堆积
+		if ( is_dir( $dir ) && $dh = opendir( $dir ) ) {
+			while ( false !== ( $f = readdir( $dh ) ) ) {
+				if ( '.' === $f || '..' === $f ) { continue; }
+				$p = $dir . '/' . $f;
+				if ( is_file( $p ) && ( time() - filemtime( $p ) ) > 3600 ) {
+					@unlink( $p );
+				}
+			}
+			closedir( $dh );
+		}
+
+		$id   = uniqid( '', true );
+		$meta = array(
+			'status'      => 'queued',
+			'message'     => $message,
+			'history'     => $history,
+			'role_id'     => $role_id,
+			'auto_confirm' => $auto_confirm,
+			'php_timeout' => (int) $php_timeout,
+			'max_steps'   => ( null === $max_steps ) ? null : (int) $max_steps,
+			'conv_id'     => $conv ? (int) $conv->id : 0,
+			'user_id'     => $user_id,
+			'created_at'  => time(),
+			'updated_at'  => time(),
+		);
+		file_put_contents( $dir . '/' . $id . '.meta', wp_json_encode( $meta, JSON_UNESCAPED_UNICODE ) );
+		file_put_contents( $dir . '/' . $id . '.stream', '' );
+
+		$php    = $this->find_php_cli();
+		$script = dirname( __FILE__ ) . '/run-task.php';
+		if ( ! $php || ! file_exists( $script ) ) {
+			@unlink( $dir . '/' . $id . '.meta' );
+			@unlink( $dir . '/' . $id . '.stream' );
+			return false;
+		}
+
+		$cmd = '"' . $php . '" "' . $script . '" --run=' . escapeshellarg( $id )
+			. ' >> ' . escapeshellarg( $dir . '/run.log' ) . ' 2>&1';
+		if ( 'WIN' === strtoupper( substr( PHP_OS, 0, 3 ) ) ) {
+			// start /B 脱离当前进程，"" 占位窗口标题（避免被 start 误判为标题）
+			pclose( popen( 'start /B "" ' . $cmd, 'r' ) );
+		} else {
+			// Linux：nohup + & 让后台任务脱离 Web 请求所在会话，
+			// 避免请求进程退出时被 SIGHUP 一起带走（否则异步会退化为同步、卡顿/超时回归）
+			exec( 'nohup ' . $cmd . ' &' );
+		}
+		return array( 'id' => $id );
+	}
+
+	/** 轮询端点：按 offset 增量返回 SSE 文本 + 当前状态，Web 请求保持轻量 */
+	public function api_task_stream( $request ) {
+		$id     = (string) $request->get_param( 'task_id' );
+		$offset = (int) $request->get_param( 'offset' );
+		if ( ! preg_match( '/^[A-Za-z0-9_.-]+$/', $id ) ) {
+			return new WP_Error( 'tianma_bad_task', '非法的任务标识', array( 'status' => 400 ) );
+		}
+		$upload      = wp_upload_dir();
+		$dir         = $upload['basedir'] . '/tianma-stream';
+		$stream_file = $dir . '/' . $id . '.stream';
+		$meta_file   = $dir . '/' . $id . '.meta';
+		if ( ! file_exists( $stream_file ) ) {
+			return new WP_Error( 'tianma_no_task', '任务不存在或已过期', array( 'status' => 404 ) );
+		}
+		$meta   = file_exists( $meta_file ) ? json_decode( file_get_contents( $meta_file ), true ) : array();
+		$owner  = isset( $meta['user_id'] ) ? (int) $meta['user_id'] : 0;
+		if ( $owner && $owner !== get_current_user_id() ) {
+			return new WP_Error( 'tianma_forbidden', '无权访问该任务', array( 'status' => 403 ) );
+		}
+		$content = file_get_contents( $stream_file );
+		$len     = strlen( $content );
+		if ( $offset < 0 || $offset > $len ) {
+			$offset = 0;
+		}
+		$new    = substr( $content, $offset );
+		$status = isset( $meta['status'] ) ? $meta['status'] : 'running';
+		// 看门狗：若一直停在 queued（后台进程未真正拉起），避免前端无限轮询
+		if ( 'queued' === $status && isset( $meta['updated_at'] ) && ( time() - (int) $meta['updated_at'] ) > 15 ) {
+			$status = 'error';
+			$meta['error'] = '后台进程未能启动（可能是主机禁用了 proc_open/exec 或找不到 PHP CLI）';
+			file_put_contents( $meta_file, wp_json_encode( $meta, JSON_UNESCAPED_UNICODE ) );
+		}
+		$resp   = array(
+			'offset' => $len,
+			'data'   => $new,
+			'status' => $status,
+		);
+		if ( in_array( $status, array( 'done', 'error' ), true ) && isset( $meta['final'] ) ) {
+			$resp['final'] = $meta['final'];
+		}
+		return rest_ensure_response( $resp );
+	}
+
+	/** SSE 流式对话输出（降级/兜底用：输出后直接终止） */
+	private function stream_chat( $message, $history, $user_id, $conv, $auto_confirm = null, $role_id = 0, $php_timeout = 0, $max_steps = null ) {
 		// 彻底关闭所有输出缓冲，确保 SSE 实时推送
 		ini_set( 'output_buffering', '0' );
 		ini_set( 'zlib.output_compression', '0' );
@@ -707,6 +861,17 @@ class Tianma_Core {
 		header( 'X-Accel-Buffering: no' );
 		header( 'Connection: keep-alive' );
 
+		// 关键修复：客户端断开（关标签页/网络抖动/前端超时重连）时不再中止 PHP，
+		// 智能体在后台继续跑并把最终回复写回会话；取消执行时限，避免长任务被 PHP 杀死。
+		ignore_user_abort( true );
+		$php_timeout = (int) $php_timeout;
+		set_time_limit( $php_timeout > 0 ? $php_timeout : 0 );
+		// 生产环境（PHP-FPM）：立即把当前 worker 归还给进程池去服务其他访客，
+		// SSE 仍持续推送。彻底消除"AI 回复期间整站卡顿"。php -S 内置服务器无此函数，自动跳过。
+		if ( function_exists( 'fastcgi_finish_request' ) ) {
+			fastcgi_finish_request();
+		}
+
 		$emitter = function ( $event, $payload ) {
 			echo "event: {$event}\n";
 			echo 'data: ' . wp_json_encode( $payload, JSON_UNESCAPED_UNICODE ) . "\n\n";
@@ -718,6 +883,9 @@ class Tianma_Core {
 		$agent->auto_confirm = $auto_confirm;
 		if ( $role_id ) {
 			$agent->role = Tianma_Role::get( $role_id );
+		}
+		if ( null !== $max_steps ) {
+			$agent->set_max_steps( (int) $max_steps );
 		}
 		$done  = $agent->run_stream( $message, $history, $user_id, $emitter );
 
@@ -735,6 +903,9 @@ class Tianma_Core {
 	}
 
 	public function api_confirm( $request ) {
+		// 确认后续跑可能较长：放开执行时限，避免被 PHP 超时打断
+		ignore_user_abort( true );
+		set_time_limit( 0 );
 		$hash   = sanitize_key( (string) $request->get_param( 'confirm_id' ) );
 		$approve = (bool) $request->get_param( 'approve' );
 

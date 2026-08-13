@@ -4,7 +4,7 @@ Tags: ai, agent, assistant, chatbot, automation
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.7.0
 License: GPLv2 or later
 
 内置 AI 智能体助手：连接外部大模型 API 与内置向量记忆库，用自然语言完成 WordPress 全站管理、开发与维护任务。自学习，越用越聪明。
@@ -55,6 +55,19 @@ License: GPLv2 or later
 所有请求直接发送到你配置的模型服务商；工具操作均记录审计日志；高危操作需你确认。
 
 == Changelog ==
+
+= 1.7.0 =
+* AI 回复改为后台异步执行，彻底消除整站卡顿（POST 启动独立进程，前端轮询增量拉取）
+* 修复任务工作中莫名中断：移除工具失败熔断、取消固定步数上限（0=不限制）、前端不再误判超时
+* 聊天页新增「PHP 超时时间」「最大工具步数」自定义控件（0 均表示不限制）
+* Linux / 生产环境适配：nohup 脱离会话避免被 SIGHUP 带走、find_php_cli 改为 OS 感知并加绝对路径兜底
+
+= 1.6.0 =
+* 新增 Gitee 国内镜像链接（README / 设置页双仓库地址）
+* 新增演示 GIF（assets/tianma-demo.gif）
+
+= 1.5.9 =
+* 天马行空 WP 智能体核心能力补强与若干细节修复
 
 = 1.0.0 =
 * 首个正式版本

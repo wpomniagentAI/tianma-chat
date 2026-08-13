@@ -87,60 +87,117 @@
 
 	/* ---------------- 流式请求 ---------------- */
 
+	/**
+	 * 优先走「后台异步」：POST 拿到 task_id 后轮询 /task-stream 增量拉取，
+	 * Web 请求保持轻量 → 不再阻塞整站。后端若降级为同步流式（text/event-stream），则走原 fetch 直读。
+	 */
 	function fetchStream( data, ui ) {
-		var ctrl = new AbortController();
-		var timer = setTimeout( function () { ctrl.abort(); }, 100000 );
-
-		var pi = 0;
+		// 后端为异步进程，会持续把结果写入流文件；此处不再因「长时间无数据」而中断轮询，
+		// 只在超过阈值时给出柔和提示并继续等待后端最终产出，避免误判为超时/中断。
+		var lastData = Date.now();
+		var stallSoft = false;
+		var stallHard = false;
+		var stall = setInterval( function () {
+			var idle = Date.now() - lastData;
+			if ( ! stallSoft && idle > 180000 && ui.thinkText ) {
+				ui.thinkText.textContent = '任务执行时间较长，仍在后台运行中…（可随时刷新页面查看）';
+				stallSoft = true;
+			}
+			if ( ! stallHard && idle > 1800000 && ui.thinkText ) {
+				ui.thinkText.textContent = '任务已运行超过 30 分钟，仍在后台继续；本页保持等待，亦可关闭后稍回会话查看结果。';
+				stallHard = true;
+			}
+		}, 5000 );
 		var phraseTimer = setInterval( function () {
-			pi = ( pi + 1 ) % THINK_PHRASES.length;
-			ui.thinkText.textContent = THINK_PHRASES[ pi ];
+			phraseIdx = ( phraseIdx + 1 ) % THINK_PHRASES.length;
+			if ( ui.thinkText ) { ui.thinkText.textContent = THINK_PHRASES[ phraseIdx ]; }
 		}, 2600 );
+		var phraseIdx = 0;
+
+		function finishWith( errMsg ) {
+			clearInterval( stall );
+			clearInterval( phraseTimer );
+			if ( errMsg ) { ui.showError( errMsg ); }
+			busy = false;
+			sendBtn.disabled = false;
+			inputEl.focus();
+		}
+
+		function legacyStream( r ) {
+			// 后端同步降级：直接读 body 流（原逻辑）
+			var reader = r.body.getReader();
+			var decoder = new TextDecoder();
+			var buf = '';
+			function loop() {
+				return reader.read().then( function ( res ) {
+					if ( res.done ) { return; }
+					buf += decoder.decode( res.value, { stream: true } );
+					lastData = Date.now();
+					var idx;
+					while ( ( idx = buf.indexOf( '\n\n' ) ) >= 0 ) {
+						handleEvent( buf.slice( 0, idx ), ui );
+						buf = buf.slice( idx + 2 );
+					}
+					return loop();
+				} );
+			}
+			return loop().then( function () { finishWith(); } ).catch( function ( e ) {
+				finishWith( errText( e ) );
+			} );
+		}
+
+		function pollLoop( taskId ) {
+			var offset = 0;
+			var residual = '';
+			function poll() {
+				fetch( apiUrl( 'task-stream', { task_id: taskId, offset: offset } ), {
+					headers: { 'X-WP-Nonce': NONCE }
+				} ).then( function ( r ) {
+					if ( ! r.ok ) { throw new Error( 'HTTP ' + r.status ); }
+					return r.json();
+				} ).then( function ( resp ) {
+					lastData = Date.now();
+					residual += resp.data || '';
+					var idx;
+					while ( ( idx = residual.indexOf( '\n\n' ) ) >= 0 ) {
+						handleEvent( residual.slice( 0, idx ), ui );
+						residual = residual.slice( idx + 2 );
+					}
+					offset = resp.offset;
+					if ( 'done' === resp.status || 'error' === resp.status || 'needs_confirm' === resp.status ) {
+						// 事件已渲染 UI；这里仅结束轮询（勿重复 finish 以免重复反馈框）
+						if ( 'needs_confirm' === resp.status ) {
+							// 等待用户在前端点击确认（api_confirm 同步续跑），释放 busy
+							finishWith();
+						} else {
+							finishWith();
+						}
+						return;
+					}
+					setTimeout( poll, 700 );
+				} ).catch( function ( e ) {
+					finishWith( errText( e ) );
+				} );
+			}
+			poll();
+		}
 
 		return fetch( API + 'chat', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': NONCE },
-			body: JSON.stringify( data ),
-			signal: ctrl.signal
+			body: JSON.stringify( Object.assign( {}, data, { stream: true } ) )
 		} ).then( function ( r ) {
-			if ( ! r.ok || ! r.body ) {
-				throw new Error( 'HTTP ' + r.status );
+			if ( ! r.ok ) { throw new Error( 'HTTP ' + r.status ); }
+			var ct = r.headers.get( 'content-type' ) || '';
+			if ( ct.indexOf( 'text/event-stream' ) >= 0 ) {
+				return legacyStream( r ); // 同步降级
 			}
-			var reader = r.body.getReader();
-			var decoder = new TextDecoder();
-			var buf = '';
-			var gotEvent = false;
-			return readLoop();
-
-			function readLoop() {
-				return reader.read().then( function ( res ) {
-					if ( res.done ) {
-						// 兜底：全程未收到 SSE 事件且响应体是 JSON（后端降级为非流式）→ 直接渲染
-						if ( ! gotEvent && buf.trim() ) {
-							try {
-								var d = JSON.parse( buf.trim() );
-								applyResult( d, ui );
-							} catch ( e ) {}
-						}
-						return;
-					}
-					buf += decoder.decode( res.value, { stream: true } );
-					var idx;
-					while ( ( idx = buf.indexOf( '\n\n' ) ) >= 0 ) {
-						var raw = buf.slice( 0, idx );
-						buf = buf.slice( idx + 2 );
-						gotEvent = true;
-						handleEvent( raw, ui );
-					}
-					return readLoop();
-				} );
-			}
-		} ).finally( function () {
-			clearTimeout( timer );
-			clearInterval( phraseTimer );
-			busy = false;
-			sendBtn.disabled = false;
-			inputEl.focus();
+			return r.json().then( function ( d ) {
+				if ( d && d.task_id ) { pollLoop( d.task_id ); return; }
+				throw new Error( '后端未返回任务标识，可能已降级' );
+			} );
+		} ).catch( function ( e ) {
+			finishWith( errText( e ) );
 		} );
 	}
 
@@ -419,7 +476,9 @@
 				conversation_id: convId,
 				stream: true,
 				auto_confirm: autoConfirmEl.checked,
-				role_id: parseInt( barRole.value || '0', 10 ) || 0
+				role_id: parseInt( barRole.value || '0', 10 ) || 0,
+				max_steps: parseInt( maxStepsEl ? maxStepsEl.value : '0', 10 ) || 0,
+				php_timeout: parseInt( phpTimeoutEl ? phpTimeoutEl.value : '0', 10 ) || 0
 			}, ui ).catch( function ( e ) {
 				ui.showError( errText( e ) + '（可稍后重试）' );
 			} );
@@ -647,6 +706,8 @@
 	var barCurrent = document.getElementById( 'tianma-bar-current' );
 	var barRole = document.getElementById( 'tianma-bar-role' );
 	var autoConfirmEl = document.getElementById( 'tianma-auto-confirm' );
+	var maxStepsEl = document.getElementById( 'tianma-max-steps' );
+	var phpTimeoutEl = document.getElementById( 'tianma-php-timeout' );
 	var presetsData = null;
 	var barSettings = null;
 
@@ -694,6 +755,22 @@
 			}
 		} );
 		autoConfirmEl.dispatchEvent( new Event( 'change' ) );
+	}
+
+	// 恢复上次的执行参数（最大工具步数 / PHP 超时）并持久化
+	if ( maxStepsEl ) {
+		var savedMs = parseInt( localStorage.getItem( 'tianma_max_steps' ), 10 );
+		if ( ! isNaN( savedMs ) ) { maxStepsEl.value = savedMs; }
+		maxStepsEl.addEventListener( 'change', function () {
+			localStorage.setItem( 'tianma_max_steps', String( parseInt( maxStepsEl.value, 10 ) || 0 ) );
+		} );
+	}
+	if ( phpTimeoutEl ) {
+		var savedPt = parseInt( localStorage.getItem( 'tianma_php_timeout' ), 10 );
+		if ( ! isNaN( savedPt ) ) { phpTimeoutEl.value = savedPt; }
+		phpTimeoutEl.addEventListener( 'change', function () {
+			localStorage.setItem( 'tianma_php_timeout', String( parseInt( phpTimeoutEl.value, 10 ) || 0 ) );
+		} );
 	}
 
 	function loadModelBar() {

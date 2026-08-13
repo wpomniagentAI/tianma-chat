@@ -36,6 +36,11 @@ class Tianma_Agent {
 		$this->memory   = new Tianma_Memory();
 	}
 
+	/** 聊天页可覆盖单条消息的最大工具步数：0 = 不限制（即使工具失败也继续，不强制中止） */
+	public function set_max_steps( $n ) {
+		$this->settings['max_steps'] = (int) $n;
+	}
+
 	/** 角色模式的 LLM 覆盖配置（角色配了独立模型时生效） */
 	private function role_llm_override() {
 		if ( $this->role && ! empty( $this->role->llm_api_key ) ) {
@@ -79,8 +84,8 @@ class Tianma_Agent {
 	 * ------------------------------------------------------------------- */
 
 	public function run( $message, $history, $user_id = 0 ) {
-		@set_time_limit( 150 );
-		ini_set( 'max_execution_time', '150' );
+		@set_time_limit( 0 );
+		ini_set( 'max_execution_time', '0' );
 
 		// 功能性角色模式：不对话，直接执行绑定工具输出（如生图助手 → generate_image）
 		if ( null !== $this->role && 'functional' === $this->role->role_type ) {
@@ -147,8 +152,9 @@ class Tianma_Agent {
 		$active_groups = is_array( $start_groups ) ? $start_groups : array();
 		$tools      = $this->build_tools( $active_groups );
 
-		for ( $i = 0; $i < $max_steps; $i++ ) {
-			if ( $i > 0 && $max_steps - $i <= 3 ) {
+		// 0 = 不限制：单条消息可无限次调用工具，直到模型不再发起工具调用才结束
+		for ( $i = 0; 0 === $max_steps || $i < $max_steps; $i++ ) {
+			if ( $max_steps > 0 && $i > 0 && $max_steps - $i <= 3 ) {
 				$messages[] = array(
 					'role'    => 'system',
 					'content' => '系统提示：任务剩余执行步数已不足，请立即停止调用新工具，基于已完成的操作直接向用户总结结果。',
@@ -271,12 +277,13 @@ class Tianma_Agent {
 						'summary'   => $summary,
 						'user_id'   => $user_id,
 						'usage'     => $usage,
-						'call_sigs' => $call_sigs,
-						'active_groups' => $active_groups,
-					);
-					$confirm = Tianma_Confirm::create( $payload );
+					'call_sigs' => $call_sigs,
+					'active_groups' => $active_groups,
+					'max_steps' => (int) $this->settings['max_steps'],
+				);
+				$confirm = Tianma_Confirm::create( $payload );
 
-					return $this->finish_task(
+				return $this->finish_task(
 						$summary,
 						'pending',
 						$steps,
@@ -479,8 +486,8 @@ class Tianma_Agent {
 	 * ------------------------------------------------------------------- */
 
 	public function run_stream( $message, $history, $user_id = 0, $emitter = null ) {
-		@set_time_limit( 200 );
-		ini_set( 'max_execution_time', '200' );
+		@set_time_limit( 0 );
+		ini_set( 'max_execution_time', '0' );
 
 		$emitter = is_callable( $emitter ) ? $emitter : function () {};
 
@@ -521,14 +528,15 @@ class Tianma_Agent {
 		$max_steps = (int) $this->settings['max_steps'];
 		$steps     = array();
 		$usage     = array( 'prompt_tokens' => 0, 'completion_tokens' => 0 );
-		$call_sigs = array(); // 循环熔断：已执行过的工具调用签名
+		$call_sigs = array(); // 循环熔断：仅拦截「已成功」的重复写操作
 		$consecutive_fail = 0;
 		$active_groups = array();
 		$tools = $this->build_tools( $active_groups );
 
-		for ( $i = 0; $i < $max_steps; $i++ ) {
-			// 接近上限：提示模型收敛
-			if ( $i > 0 && $max_steps - $i <= 3 ) {
+		// 0 = 不限制：单条消息可无限次调用工具，直到模型不再发起工具调用才结束（失败也不强制中止）
+		for ( $i = 0; 0 === $max_steps || $i < $max_steps; $i++ ) {
+			// 接近上限：提示模型收敛（仅在有明确上限时）
+			if ( $max_steps > 0 && $i > 0 && $max_steps - $i <= 3 ) {
 				$messages[] = array(
 					'role'    => 'system',
 					'content' => '系统提示：任务剩余执行步数已不足，请立即停止调用新工具，基于已完成的操作直接向用户总结结果。',
@@ -667,11 +675,12 @@ class Tianma_Agent {
 						'summary'   => $summary,
 						'user_id'   => $user_id,
 						'usage'     => $usage,
-						'call_sigs' => $call_sigs,
-						'active_groups' => $active_groups,
-					);
-					$confirm = Tianma_Confirm::create( $payload );
-					$emitter( 'confirm', array( 'confirm' => $confirm, 'steps' => $this->public_steps( $steps ) ) );
+					'call_sigs' => $call_sigs,
+					'active_groups' => $active_groups,
+					'max_steps' => (int) $this->settings['max_steps'],
+				);
+				$confirm = Tianma_Confirm::create( $payload );
+				$emitter( 'confirm', array( 'confirm' => $confirm, 'steps' => $this->public_steps( $steps ) ) );
 					return $this->finish_task( $summary, 'pending', $steps, $user_id, array(
 						'status'  => 'needs_confirmation',
 						'steps'   => $this->public_steps( $steps ),
@@ -762,20 +771,9 @@ class Tianma_Agent {
 					'content'      => $this->tool_result_text( $result ),
 				);
 
-				// 连续失败熔断：同一任务连续 4 次工具失败 → 强制收尾
-				if ( $consecutive_fail >= 4 ) {
-					$closing = '连续多次工具执行失败，任务中止。最近失败：' . mb_substr( $result['message'], 0, 200 );
-					$done = $this->finish_task( $summary, 'done', $steps, $user_id, array(
-						'status' => 'done',
-						'text'   => $closing,
-						'steps'  => $this->public_steps( $steps ),
-						'usage'  => $usage,
-					) );
-					$emitter( 'done', $done );
-					return $done;
-				}
+				// 不限制：工具执行失败不再强制中止任务，模型可基于失败重试或调整方案，直至自行收敛
 			}
-		}
+			}
 
 		// 达到步数上限：让模型基于已执行步骤做智能总结，而非生硬报错
 		$closing = $this->smart_close( $messages, $steps, $summary, $llm );
@@ -827,6 +825,11 @@ class Tianma_Agent {
 			return new WP_Error( 'tianma_confirm_expired', '确认请求不存在或已过期' );
 		}
 		$payload = $pending['payload'];
+
+		// 沿用发起该确认时聊天页设置的最大工具步数（0 = 不限制）
+		if ( isset( $payload['max_steps'] ) ) {
+			$this->set_max_steps( (int) $payload['max_steps'] );
+		}
 
 		$messages = isset( $payload['messages'] ) ? $payload['messages'] : array();
 		$steps    = isset( $payload['steps'] ) ? $payload['steps'] : array();

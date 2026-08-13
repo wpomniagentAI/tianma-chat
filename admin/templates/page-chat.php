@@ -81,6 +81,10 @@
 					<span class="auto-confirm-switch"></span>
 					免授权执行<span class="auto-confirm-tip"></span>
 				</label>
+				<span class="tianma-run-opts" title="后台异步进程的执行参数：0 = 不限制。即使工具失败也不会中断任务。">
+					<label>最大工具步数 <input type="number" id="tianma-max-steps" min="0" max="999" step="1" value="0"></label>
+					<label>PHP超时(秒) <input type="number" id="tianma-php-timeout" min="0" max="86400" step="10" value="0"></label>
+				</span>
 			</div>
 			<div class="tianma-messages" id="tianma-messages"></div>
 			<div class="tianma-composer">

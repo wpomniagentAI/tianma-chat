@@ -3,7 +3,7 @@
 > 让 WordPress **自己干活** —— 内置在 WordPress 里的 AI 智能体（AI Agent）插件。
 > 用中文聊天的方式，完成全站管理、内容创作、代码开发与系统维护。
 
-![Version](https://img.shields.io/badge/version-1.6.0-blue)
+![Version](https://img.shields.io/badge/version-1.7.0-blue)
 ![License](https://img.shields.io/badge/license-GPL--2.0-green)
 ![WP](https://img.shields.io/badge/WordPress-6.0%2B-orange)
 ![PHP](https://img.shields.io/badge/PHP-7.4%2B-blueviolet)
@@ -94,6 +94,16 @@
 - 国内镜像：[Gitee](https://gitee.com/xxx5545/tianma-chat)（国内用户下载更快）
 - QQ：3908349048（欢迎加我一起讨论拓展该插件）
 - 期待与你共同探讨、拓展 WP 智能体能力，让它更好用、适配更多用户需求场景
+
+## 更新日志
+
+> 完整历史见 [CHANGELOG.md](CHANGELOG.md)
+
+### v1.7.0（2026-08-13）
+- **后台异步执行，彻底消除整站卡顿**：AI 回复不再阻塞 Web 进程，改为独立后台进程运行、前端轮询拉取
+- **修复任务工作中莫名中断**：移除工具失败熔断、取消固定步数上限（0=不限制）、前端不再因「长时间无数据」误判超时
+- **聊天页新增执行参数控件**：可自定义「PHP 超时时间」与「最大工具步数」（0 均表示不限制）
+- **Linux / 生产环境适配**：`nohup` 脱离会话避免被 SIGHUP 带走后台任务；`find_php_cli` 改为 OS 感知并加绝对路径兜底
 
 ## License
 
